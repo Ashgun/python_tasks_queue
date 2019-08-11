@@ -4,9 +4,16 @@ import logging
 
 import os
 
+from pymongo import MongoClient
+from bson.objectid import ObjectId
+
 logging.basicConfig()
 
+client = MongoClient('mongodb://mongodb:27017/')
+db = client['commands_data']
+
 time.sleep(10)
+
 
 #connection = pika.BlockingConnection(pika.ConnectionParameters('rabbitmq:rabbitmq@rabbitmq'))
 
@@ -19,13 +26,27 @@ channel = connection.channel()
 #print(connection)
 #print(channel)
 
-channel.queue_declare(queue='hello')
+channel.queue_declare(queue='statuses')
 
 def callback(ch, method, properties, body):
-    print(" [x] Received command: %r" % (body,))
-    received_cmd_result = os.popen(body.decode("utf-8")).read()
-    print(received_cmd_result)
-    #logging.info(" [x] Received %r" % (body,))
+    posts = db.posts
+    uid = body.decode("utf-8")
+
+    command_data = posts.find_one({'_id': ObjectId(uid)})
+    #print(command_data)
+    cmd = command_data['command']
+    status = command_data['status']
+
+    if status == 'open':
+        print(" [x] Received command: %s" % (cmd,))
+        received_cmd_result = os.popen(cmd).read()
+        #print(received_cmd_result)
+
+        new_status = 'done'
+        posts.update_one({'_id': ObjectId(uid)}, {'$set': {'status': new_status, 'output': received_cmd_result}})
+
+        channel.basic_publish(exchange='', routing_key='statuses', body=str({'id': uid, 'status': new_status, 'output': received_cmd_result}))
+    
     time.sleep(5)
 
 channel.basic_consume('hello', on_message_callback=callback, auto_ack=True)
