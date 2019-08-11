@@ -1,0 +1,36 @@
+version: '2'
+services:
+  worker:
+    build:
+      context: ./worker
+      dockerfile: Dockerfile
+    volumes:
+      - "./:/worker"
+    depends_on:
+      - rabbitmq
+    # Allow access to docker daemon
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+#    environment:
+#      - AMQP_URI: 'amqp://rabbitmq:rabbitmq@rabbitmq:5672'
+    links:
+      - rabbitmq
+  rabbitmq:
+    image: rabbitmq:3
+    command: rabbitmq-server
+    #hostname: "rabbit"
+    environment:
+      #RABBITMQ_ERLANG_COOKIE: "SWQOKODSQALRPCLNMEQG"
+      RABBITMQ_DEFAULT_USER: "rabbitmq"
+      RABBITMQ_DEFAULT_PASS: "rabbitmq"
+      RABBITMQ_DEFAULT_VHOST: "/"
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+      - "5671:5671"
+        #    healthcheck:
+        #      test: ["CMD", "rabbitmqctl", "cluster_status"]
+        #      interval: 5s
+        #      timeout: 2s
+        #      retries: 20
+

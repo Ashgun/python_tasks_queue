@@ -1,0 +1,41 @@
+version: '2'
+services:
+  worker:
+    build:
+      context: ./worker
+      dockerfile: Dockerfile
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+    # Allow access to docker daemon
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /home/:/home/
+    links:
+      - rabbitmq
+  sender:
+    build:
+      context: ./sender
+      dockerfile: Dockerfile
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+    # Allow access to docker daemon
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /home/;/home/
+    links:
+      - rabbitmq
+  rabbitmq:
+    image: rabbitmq:3
+    command: rabbitmq-server
+    environment:
+      #RABBITMQ_ERLANG_COOKIE: "SWQOKODSQALRPCLNMEQG"
+      RABBITMQ_DEFAULT_USER: "rabbitmq"
+      RABBITMQ_DEFAULT_PASS: "rabbitmq"
+      RABBITMQ_DEFAULT_VHOST: "/"
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+      - "5671:5671"
+
