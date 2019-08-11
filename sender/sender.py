@@ -29,7 +29,8 @@ for i in range(50):
     post = {
             'command': 'python3 /home/valentin/test.py',
             'status': 'open',
-            'output': ''
+            'output': '',
+            'message': ''
     }
     posts = db.posts
     post_id = posts.insert_one(post).inserted_id

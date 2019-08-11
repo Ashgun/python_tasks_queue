@@ -39,13 +39,22 @@ def callback(ch, method, properties, body):
 
     if status == 'open':
         print(" [x] Received command: %s" % (cmd,))
-        received_cmd_result = os.popen(cmd).read()
-        #print(received_cmd_result)
 
-        new_status = 'done'
-        posts.update_one({'_id': ObjectId(uid)}, {'$set': {'status': new_status, 'output': received_cmd_result}})
+        try:
+            received_cmd_result = os.popen(cmd).read()
+            #print(received_cmd_result)
 
-        channel.basic_publish(exchange='', routing_key='statuses', body=str({'id': uid, 'status': new_status, 'output': received_cmd_result}))
+            new_status = 'done'
+            posts.update_one({'_id': ObjectId(uid)}, {'$set': {'status': new_status, 'output': received_cmd_result}})
+
+            channel.basic_publish(exchange='', routing_key='statuses', body=str({'id': uid, 'status': new_status, 'output': received_cmd_result}))
+
+        except Exception:
+            new_status = 'failed'
+            message = traceback.format_exc()
+            posts.update_one({'_id': ObjectId(uid)}, {'$set': {'status': new_status, 'output': '', 'message': message}})
+
+            channel.basic_publish(exchange='', routing_key='statuses', body=str({'id': uid, 'status': new_status, 'message': message}))
     
     time.sleep(5)
 
