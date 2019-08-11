@@ -1,10 +1,29 @@
 version: '2'
 services:
-  worker:
+  worker0:
     build:
       context: ./worker
       dockerfile: Dockerfile
     restart: on-failure
+    environment:
+      - WORKER_ID=0
+    depends_on:
+      - rabbitmq
+      - mongodb
+    # Allow access to docker daemon
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /home/:/home/
+    links:
+      - rabbitmq
+      - mongodb
+  worker1:
+    build:
+      context: ./worker
+      dockerfile: Dockerfile
+    restart: on-failure
+    environment:
+      - WORKER_ID=1
     depends_on:
       - rabbitmq
       - mongodb

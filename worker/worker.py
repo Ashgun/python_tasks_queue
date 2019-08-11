@@ -9,6 +9,8 @@ from bson.objectid import ObjectId
 
 logging.basicConfig()
 
+print('WORKER_ID = ', os.environ['WORKER_ID'])
+
 client = MongoClient('mongodb://mongodb:27017/')
 db = client['commands_data']
 
