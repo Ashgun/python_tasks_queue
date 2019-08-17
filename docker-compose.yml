@@ -5,7 +5,9 @@ services:
       context: ./worker
       dockerfile: Dockerfile
     restart: on-failure
+    # runtime: nvidia
     environment:
+      - CUDA_VISIBLE_DEVICES=0
       - WORKER_ID=0
     depends_on:
       - rabbitmq
@@ -22,7 +24,9 @@ services:
       context: ./worker
       dockerfile: Dockerfile
     restart: on-failure
+    # runtime: nvidia
     environment:
+      - CUDA_VISIBLE_DEVICES=1
       - WORKER_ID=1
     depends_on:
       - rabbitmq
@@ -39,6 +43,8 @@ services:
       context: ./sender
       dockerfile: Dockerfile
     restart: on-failure
+    ports:
+      - "8001:8001"
     depends_on:
       - rabbitmq
       - mongodb
@@ -71,5 +77,6 @@ services:
       - ./data/db:/data/db
     ports:
       - 27017:27017
-    command: mongod --smallfiles --logpath=/dev/null # --quiet
+    #command: mongod --smallfiles --logpath=/dev/null # --quiet
+    command: mongod --logpath=/dev/null # --quiet
 

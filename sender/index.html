@@ -32,16 +32,16 @@
 		var formData = new FormData();
 
         	formData.append("username", "Groucho");
-        	formData.append("accountnum", 123456); // число 123456 немедленно преобразуется в строку "123456"
+        	formData.append("accountnum", 123456);
 
-        	// Файл, выбранный пользователем
         	//formData.append("userfile", fileInputElement.files[0]);
 
-        	// JavaScript Blob объект
-        	var content = cmdText.value;//'<a id="a"><b id="b">hey!</b></a>'; // содержимое нового файла...
-        	var blob = new Blob([content], { type: "text/xml"});
+        	// JavaScript Blob object
+        	//var content = cmdText.value;//'<a id="a"><b id="b">hey!</b></a>';
+        	//var blob = new Blob([content], { type: "text/xml"});
+        	//formData.append("cmdText", blob);
 
-        	formData.append("cmdText", blob);
+        	formData.append("cmdText", cmdText.value);
 
         	var request = new XMLHttpRequest();
 		request.open("POST", "/send");

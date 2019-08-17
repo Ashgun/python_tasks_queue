@@ -3,6 +3,28 @@ import http.server
 import socketserver
 import cgi
 
+import pika
+import time
+import logging
+
+from pymongo import MongoClient
+from bson.objectid import ObjectId
+
+logging.basicConfig()
+
+time.sleep(20)
+
+client = MongoClient('mongodb://mongodb:27017/')
+db = client['commands_data']
+
+credentials = pika.PlainCredentials('rabbitmq', 'rabbitmq')
+parameters = pika.ConnectionParameters('rabbitmq', 5672, '/', credentials)
+connection = pika.BlockingConnection(parameters)
+
+channel = connection.channel()
+
+channel.queue_declare(queue='hello')
+
 PORT = 8001
 
 class myHandler(http.server.BaseHTTPRequestHandler):
@@ -14,7 +36,7 @@ class myHandler(http.server.BaseHTTPRequestHandler):
 		self.end_headers()
 		# Send the html message
 		#self.wfile.write("Hello World !".encode())
-		f = open('index1.html')
+		f = open('index.html')
 		self.wfile.write(f.read().encode())
 		f.close()
 		return
@@ -29,11 +51,24 @@ class myHandler(http.server.BaseHTTPRequestHandler):
 		                 'CONTENT_TYPE':self.headers['Content-Type'],
 			})
 
-			print(form)
-			print("Your name is: %s" % form["username"].value)
+			#print(form)
+			#print("Your name is: %s" % form["username"].value)
 			self.send_response(200)
 			self.end_headers()
-			self.wfile.write(str.encode("Thanks %s !" % form["username"].value))
+			#self.wfile.write(str.encode("Thanks %s !" % form["username"].value))
+
+			post = {
+				'command': form["cmdText"].value,
+				'status': 'open',
+				'output': '',
+				'message': ''
+			}
+			post_id = db.posts.insert_one(post).inserted_id
+
+			channel.basic_publish(exchange='', routing_key='hello', body=str(post_id))
+			#channel.basic_publish(exchange='', routing_key='hello', body='ls /home/')
+    
+			print(" [x] Sent message")
 		return	
 
 
