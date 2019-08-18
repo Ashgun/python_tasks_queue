@@ -6,12 +6,41 @@
 		</head>
 <body>
 
-<p>Queue:</p>
+<p>Add commmand:</p>
 
+<body onload="onload();">
+    <input type="text" name="enter" class="enter" value="" id="cmdText"/>
+    <input type="button" value="Add to queue" onclick="addToQueue();"/>
+</body>
+
+<p>Queue:</p>
 <p id="queue"></p>
 
 <script type="text/javascript">
     var cmdText;
+
+    var myVar = setInterval(myTimer, 1000);
+    //var index = 0;
+    function myTimer() {
+        //document.getElementById("queue").innerHTML = index.toString();
+        //index = index + 1; 
+
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function() { 
+            console.log('xhr.responseText = ', xhr.responseText)
+            if (xhr.readyState == 4) {
+                if (xhr.status == 200) {
+                    var response = xhr.responseText;
+                    document.getElementById("queue").innerHTML = response;
+                } else {
+                    document.getElementById("queue").innerHTML = xhr.status + ': ' + xhr.statusText;
+                }
+            }
+        };
+        xhr.open("GET", '/status', true);
+        xhr.send(null);
+        
+    }
 
     function onload() { 
         cmdText = document.getElementById('cmdText');
@@ -55,11 +84,6 @@
     }
 
 </script>
-
-<body onload="onload();">
-    <input type="text" name="enter" class="enter" value="" id="cmdText"/>
-    <input type="button" value="Add to queue" onclick="addToQueue();"/>
-</body>
 
 </body>
 </html>

@@ -12,7 +12,7 @@ from bson.objectid import ObjectId
 
 logging.basicConfig()
 
-time.sleep(20)
+time.sleep(15)
 
 client = MongoClient('mongodb://mongodb:27017/')
 db = client['commands_data']
@@ -31,14 +31,22 @@ class myHandler(http.server.BaseHTTPRequestHandler):
 	
 	#Handler for the GET requests
 	def do_GET(self):
-		self.send_response(200)
-		self.send_header('Content-type','text/html')
-		self.end_headers()
-		# Send the html message
-		#self.wfile.write("Hello World !".encode())
-		f = open('index.html')
-		self.wfile.write(f.read().encode())
-		f.close()
+		#print("GET", self.path)
+		if self.path == '/':
+			self.send_response(200)
+			self.send_header('Content-type','text/html')
+			self.end_headers()
+			# Send the html message
+			#self.wfile.write("Hello World !".encode())
+			f = open('index.html')
+			self.wfile.write(f.read().encode())
+			f.close()
+		if self.path == '/status':
+			self.send_response(200)
+			self.send_header('Content-type','text/html')
+			self.end_headers()
+			#self.wfile.write(str(time.clock()) + "<br>Status<br>information".encode())
+			self.wfile.write((str(time.clock()) + '<br>Status<br>information').encode())
 		return
 	def do_POST(self):
 		print("POST", self.path)
