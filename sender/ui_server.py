@@ -27,15 +27,24 @@ channel.queue_declare(queue='hello')
 
 PORT = 8001
 
+status_color_map = {
+	'done': '#00ff00',
+	'failed': '#ff0000',
+	'open': '#f0f0f0',
+	'in progress': '#ffbf00'
+}
+
 def GetTasksList():
 	header_row = ['Command',   'Status',   'Output', 'Message']
 	html = '<table border="1"><tr><th>' + '</th><th>'.join(header_row) + '</th></tr>'
 
 	for task in db.posts.find({}):
-		output = task['output'].strip().replace('\\n', '<br>')
-		message = task['message'].strip().replace('\\n', '<br>')
-		row = [task['command'], task['status'], output, message]
-		html += '<tr><td>' + '</td><td>'.join(row) + '</td></tr>'
+		command = '<td>' + task['command'] + '</td>'
+		status = '<td bgcolor="' + status_color_map[task['status']] + '">' + task['status'] + '</td>'
+		output = '<td>' + task['output'].strip().replace('\\n', '<br>') + '</td>'
+		message = '<td>' + task['message'].strip().replace('\c\n', '<br>') + '</td>'
+		row = [command, status, output, message]
+		html += '<tr>' + "".join(row) + '</tr>'
 	html += '</table>'
 
 	return html
