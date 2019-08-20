@@ -27,6 +27,19 @@ channel.queue_declare(queue='hello')
 
 PORT = 8001
 
+def GetTasksList():
+	header_row = ['Command',   'Status',   'Output', 'Message']
+	html = '<table border="1"><tr><th>' + '</th><th>'.join(header_row) + '</th></tr>'
+
+	for task in db.posts.find({}):
+		output = task['output'].strip().replace('\\n', '<br>')
+		message = task['message'].strip().replace('\\n', '<br>')
+		row = [task['command'], task['status'], output, message]
+		html += '<tr><td>' + '</td><td>'.join(row) + '</td></tr>'
+	html += '</table>'
+
+	return html
+
 class myHandler(http.server.BaseHTTPRequestHandler):
 	
 	#Handler for the GET requests
@@ -45,8 +58,10 @@ class myHandler(http.server.BaseHTTPRequestHandler):
 			self.send_response(200)
 			self.send_header('Content-type','text/html')
 			self.end_headers()
-			#self.wfile.write(str(time.clock()) + "<br>Status<br>information".encode())
-			self.wfile.write((str(time.clock()) + '<br>Status<br>information').encode())
+			#self.wfile.write((str(time.clock()) + '<br>Status<br>information').encode())
+
+			self.wfile.write(GetTasksList().encode())
+			print(GetTasksList())
 		return
 	def do_POST(self):
 		print("POST", self.path)
