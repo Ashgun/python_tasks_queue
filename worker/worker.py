@@ -45,6 +45,8 @@ def callback(ch, method, properties, body):
         print(" [x] Received command: %s" % (cmd,))
 
         try:
+            posts.update_one({'_id': ObjectId(uid)}, {'$set': {'status': 'in progress', 'output': '', 'message': ''}})
+
             #received_cmd_result = os.popen(cmd).read()
             process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
             #print(received_cmd_result)

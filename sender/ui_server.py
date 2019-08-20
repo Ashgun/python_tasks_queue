@@ -70,7 +70,7 @@ class myHandler(http.server.BaseHTTPRequestHandler):
 			#self.wfile.write((str(time.clock()) + '<br>Status<br>information').encode())
 
 			self.wfile.write(GetTasksList().encode())
-			print(GetTasksList())
+			#print(GetTasksList())
 		return
 	def do_POST(self):
 		print("POST", self.path)
