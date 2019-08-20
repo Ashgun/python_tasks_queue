@@ -41,8 +41,9 @@ def GetTasksList():
 	for task in db.posts.find({}):
 		command = '<td>' + task['command'] + '</td>'
 		status = '<td bgcolor="' + status_color_map[task['status']] + '">' + task['status'] + '</td>'
-		output = '<td><button type="button" class="btn btn-info" data-toggle="collapse" data-target="#demo">Simple collapsible</button><div id="demo" class="collapse in">' + task['output'].strip().replace('\\n', '<br>') + '</div></td>'
-		message = '<td>' + task['message'].strip().replace('\c\n', '<br>') + '</td>'
+		#output = '<td><button type="button" class="btn btn-info" data-toggle="collapse" data-target="#demo">Simple collapsible</button><div id="demo" class="collapse in">' + task['output'].strip().replace('\\n', '<br>').replace('\n', '<br>') + '</div></td>'
+		output = '<td>' + task['output'].strip().replace('\\n', '<br>').replace('\n', '<br>') + '</td>'
+		message = '<td>' + task['message'].strip().replace('\\n', '<br>').replace('\n', '<br>') + '</td>'
 		row = [command, status, output, message]
 		html += '<tr>' + "".join(row) + '</tr>'
 	html += '</table>'
