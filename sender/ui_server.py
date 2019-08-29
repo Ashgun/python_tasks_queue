@@ -5,6 +5,7 @@ import cgi
 
 import pika
 import time
+import json
 import logging
 
 from pymongo import MongoClient
@@ -35,20 +36,20 @@ status_color_map = {
 }
 
 def GetTasksList():
-	header_row = ['Command',   'Status',   'Output', 'Message']
-	html = '<table border="1"><tr><th>' + '</th><th>'.join(header_row) + '</th></tr>'
-
+	result = { "tasks" : [] };
 	for task in db.posts.find({}):
-		command = '<td>' + task['command'] + '</td>'
-		status = '<td bgcolor="' + status_color_map[task['status']] + '">' + task['status'] + '</td>'
-		#output = '<td><button type="button" class="btn btn-info" data-toggle="collapse" data-target="#demo">Simple collapsible</button><div id="demo" class="collapse in">' + task['output'].strip().replace('\\n', '<br>').replace('\n', '<br>') + '</div></td>'
-		output = '<td>' + task['output'].strip().replace('\\n', '<br>').replace('\n', '<br>') + '</td>'
-		message = '<td>' + task['message'].strip().replace('\\n', '<br>').replace('\n', '<br>') + '</td>'
-		row = [command, status, output, message]
-		html += '<tr>' + "".join(row) + '</tr>'
-	html += '</table>'
+		taskView = {
+			"id" : str(task['_id']),
+			"message" : task['message'].strip().replace('\\n', '<br>').replace('\n', '<br>'),
+			"output" : task['output'].strip().replace('\\n', '<br>').replace('\n', '<br>'),
+			"status" : task['status'],
+			"command" : task['command'],
+			"color" : status_color_map[task['status']]
+		}
 
-	return html
+		result["tasks"].append(taskView)
+
+	return json.dumps(result)
 
 class myHandler(http.server.BaseHTTPRequestHandler):
 	

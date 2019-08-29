@@ -23,6 +23,14 @@
 <script type="text/javascript">
     var cmdText;
 
+    var tableHeader = '<table border="1">';
+tableHeader += '<tr>';
+tableHeader += '<th>Command</th>';
+tableHeader += '<th>Status</th>';
+tableHeader += '<th>Output</th>';
+tableHeader += '<th>Message</th>';
+tableHeader += '</tr>';
+
     var myVar = setInterval(myTimer, 1000);
     //var index = 0;
     function myTimer() {
@@ -34,8 +42,25 @@
             console.log('xhr.responseText = ', xhr.responseText)
             if (xhr.readyState == 4) {
                 if (xhr.status == 200) {
-                    var response = xhr.responseText;
-                    document.getElementById("queue").innerHTML = response;
+                    var response = JSON.parse(xhr.responseText);
+
+                    tableHtml = '<table>' + tableHeader;
+
+
+                    for (var i = 0; i < response['tasks'].length; ++i)
+{
+tableHtml += '<tr>'
+tableHtml += '<td>' + response['tasks'][i]['command'] + '</td>'
+tableHtml += '<td bgcolor="' + response['tasks'][i]['color'] + '">' + response['tasks'][i]['status'] + '</td>'
+tableHtml += '<td>' + response['tasks'][i]['output'] + '</td>'
+tableHtml += '<td>' + response['tasks'][i]['message'] + '</td>'
+tableHtml += '</tr>'
+}
+
+                    tableHtml += '</table>'
+console.log(tableHtml)
+                    
+                    document.getElementById("queue").innerHTML = tableHtml;
                 } else {
                     if (xhr.status != 0) document.getElementById("queue").innerHTML = xhr.status + ': ' + xhr.statusText;
                     else document.getElementById("queue").innerHTML = 'Queue data loading failed...';
