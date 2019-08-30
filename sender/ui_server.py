@@ -11,6 +11,8 @@ import logging
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 
+import urllib.parse as urlparse
+
 logging.basicConfig()
 
 time.sleep(15)
@@ -51,6 +53,21 @@ def GetTasksList():
 
 	return json.dumps(result)
 
+def GetTaskById(uid):
+	for task in db.posts.find({'_id': ObjectId(uid)}):
+		taskView = {
+			"obtainedId" : str(task['_id']),
+			"message" : task['message'].strip().replace('\\n', '<br>').replace('\n', '<br>'),
+			"output" : task['output'].strip().replace('\\n', '<br>').replace('\n', '<br>'),
+			"status" : task['status'],
+			"command" : task['command'],
+			"color" : status_color_map[task['status']]
+		}
+		return json.dumps(taskView)
+
+	data = { 'obtainedId' : uid }
+	return json.dumps(data)
+
 class myHandler(http.server.BaseHTTPRequestHandler):
 	
 	#Handler for the GET requests
@@ -65,6 +82,15 @@ class myHandler(http.server.BaseHTTPRequestHandler):
 			f = open('index.html')
 			self.wfile.write(f.read().encode())
 			f.close()
+
+		if self.path.startswith('/get_record'):
+			form = urlparse.parse_qs(urlparse.urlparse(self.path).query)
+
+			self.send_response(200)
+			self.send_header('Content-type','text/html')
+			self.end_headers()
+			self.wfile.write(GetTaskById(form['id'][0]).encode())
+
 		if self.path == '/status':
 			self.send_response(200)
 			self.send_header('Content-type','text/html')
@@ -73,11 +99,12 @@ class myHandler(http.server.BaseHTTPRequestHandler):
 
 			self.wfile.write(GetTasksList().encode())
 			#print(GetTasksList())
+
 		return
 	def do_POST(self):
 		print("POST", self.path)
 		if self.path=="/send":
-			print("self.rfile", self.rfile);
+			#print("self.rfile", self.rfile);
 			form = cgi.FieldStorage(
 				fp=self.rfile, 
 				headers=self.headers,
@@ -102,7 +129,7 @@ class myHandler(http.server.BaseHTTPRequestHandler):
 			channel.basic_publish(exchange='', routing_key='hello', body=str(post_id))
 			#channel.basic_publish(exchange='', routing_key='hello', body='ls /home/')
     
-			print(" [x] Sent message")
+			print(" [x] Sent command to queue")
 		return	
 
 

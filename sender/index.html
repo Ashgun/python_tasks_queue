@@ -17,8 +17,20 @@
     <input type="button" value="Add to queue" onclick="addToQueue();"/>
 </body>
 
-<p>Queue:</p>
-<p id="queue"></p>
+<table>
+<tr>
+<th><p>Queue:</p></th>
+<td></td>
+<th><p>Information:</p></th>
+</tr>
+<tr>
+<td valign="top"><p id="queue"></p></td>
+<td></td>
+<td valign="top"><p id="information"></p></td>
+</tr>
+</table>
+
+
 
 <script type="text/javascript">
     var cmdText;
@@ -31,6 +43,47 @@ tableHeader += '<th>Output</th>';
 tableHeader += '<th>Message</th>';
 tableHeader += '</tr>';
 
+function OpenDetails(id)
+{
+//alert(id);
+document.getElementById("information").innerHTML = id;
+
+var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function() { 
+            //console.log('xhr.responseText = ', xhr.responseText)
+            if (xhr.readyState == 4) {
+                if (xhr.status == 200) {
+                    var response = JSON.parse(xhr.responseText);
+		//console.log(response);
+			
+			tableHtml = '<table>';
+			tableHtml += '<tr>' + '<th>Task ID</th><td>' + response['obtainedId'] + '</td></tr>';
+tableHtml += '<tr>' + '<th>Command</th><td>' + response['command'] + '</td></tr>';
+tableHtml += '<tr>' + '<th>Status</th><td bgcolor="' + response['color'] + '">' + response['status'] + '</td></tr>';
+tableHtml += '<tr>' + '<th valign="top">Output</th><td valign="top">' + response['output'] + '</td></tr>';
+tableHtml += '<tr>' + '<th valign="top">Message</th><td valign="top">' + response['message'] + '</td></tr>';
+			tableHtml += '</table>';
+                    
+                    document.getElementById("information").innerHTML = tableHtml;
+                } else {
+                    if (xhr.status != 0) document.getElementById("information").innerHTML = xhr.status + ': ' + xhr.statusText;
+                    else document.getElementById("information").innerHTML = 'Record data loading failed...';
+                }
+            }
+        };
+
+        xhr.open("GET", '/get_record?id=' + id, true);
+        xhr.send(null);
+}
+
+function GetInfoView(id, info)
+{
+if (info.length < 128) return info;
+
+return '<a onclick="OpenDetails(\'' + id + '\')" href="javascript:void(0);">' + info.substring(0, 127) + '...</a>';
+
+}
+
     var myVar = setInterval(myTimer, 1000);
     //var index = 0;
     function myTimer() {
@@ -39,7 +92,7 @@ tableHeader += '</tr>';
 
         var xhr = new XMLHttpRequest();
         xhr.onreadystatechange = function() { 
-            console.log('xhr.responseText = ', xhr.responseText)
+            //console.log('xhr.responseText = ', xhr.responseText)
             if (xhr.readyState == 4) {
                 if (xhr.status == 200) {
                     var response = JSON.parse(xhr.responseText);
@@ -49,16 +102,17 @@ tableHeader += '</tr>';
 
                     for (var i = 0; i < response['tasks'].length; ++i)
 {
+const id = response['tasks'][i]['id'];
+
 tableHtml += '<tr>'
 tableHtml += '<td>' + response['tasks'][i]['command'] + '</td>'
 tableHtml += '<td bgcolor="' + response['tasks'][i]['color'] + '">' + response['tasks'][i]['status'] + '</td>'
-tableHtml += '<td>' + response['tasks'][i]['output'] + '</td>'
-tableHtml += '<td>' + response['tasks'][i]['message'] + '</td>'
+tableHtml += '<td>' + GetInfoView(id, response['tasks'][i]['output']) + '</td>'
+tableHtml += '<td>' + GetInfoView(id, response['tasks'][i]['message']) + '</td>'
 tableHtml += '</tr>'
 }
 
-                    tableHtml += '</table>'
-console.log(tableHtml)
+                    tableHtml += '</table>';
                     
                     document.getElementById("queue").innerHTML = tableHtml;
                 } else {
@@ -89,9 +143,6 @@ console.log(tableHtml)
         	//xhr.send();
 
 		var formData = new FormData();
-
-        	formData.append("username", "Groucho");
-        	formData.append("accountnum", 123456);
 
         	//formData.append("userfile", fileInputElement.files[0]);
 
